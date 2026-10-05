@@ -113,7 +113,9 @@ public sealed class GateCatalog : IDisposable
             var direction = TextKey.Collapse(request.Direction);
             var olympiad = TextKey.Collapse(request.Olympiad);
             var note = request.Note?.Trim() ?? "";
-            ValidateProblem(statement, answers, direction, request.Grade);
+            var hint = request.Hint?.Trim() ?? "";
+            var solution = request.Solution?.Trim() ?? "";
+            ValidateProblem(statement, answers, direction, request.Grade, hint);
             direction = Canonical("direction", direction);
             if (olympiad.Length > 0)
                 olympiad = Canonical("olympiad", olympiad);
@@ -133,7 +135,8 @@ public sealed class GateCatalog : IDisposable
                     UPDATE Problems
                     SET DirectionKey = $directionKey, Direction = $direction, Grade = $grade,
                         OlympiadKey = $olympiadKey, Olympiad = $olympiad, Statement = $statement,
-                        StatementKey = $statementKey, AnswersJson = $answers, Note = $note
+                        StatementKey = $statementKey, AnswersJson = $answers, Note = $note,
+                        Hint = $hint, Solution = $solution
                     WHERE Id = $id
                     """,
                     ("$directionKey", directionKey),
@@ -145,6 +148,8 @@ public sealed class GateCatalog : IDisposable
                     ("$statementKey", statementKey),
                     ("$answers", answersJson),
                     ("$note", note),
+                    ("$hint", hint),
+                    ("$solution", solution),
                     ("$id", request.Id));
                 if (updated == 0)
                     throw new GateException("Задача не найдена.");
@@ -153,8 +158,8 @@ public sealed class GateCatalog : IDisposable
 
             Execute(
                 """
-                INSERT INTO Problems(DirectionKey, Direction, Grade, OlympiadKey, Olympiad, Statement, StatementKey, AnswersJson, Note, CreatedAt)
-                VALUES($directionKey, $direction, $grade, $olympiadKey, $olympiad, $statement, $statementKey, $answers, $note, $created)
+                INSERT INTO Problems(DirectionKey, Direction, Grade, OlympiadKey, Olympiad, Statement, StatementKey, AnswersJson, Note, Hint, Solution, CreatedAt)
+                VALUES($directionKey, $direction, $grade, $olympiadKey, $olympiad, $statement, $statementKey, $answers, $note, $hint, $solution, $created)
                 """,
                 ("$directionKey", directionKey),
                 ("$direction", direction),
@@ -165,6 +170,8 @@ public sealed class GateCatalog : IDisposable
                 ("$statementKey", statementKey),
                 ("$answers", answersJson),
                 ("$note", note),
+                ("$hint", hint),
+                ("$solution", solution),
                 ("$created", _now().ToString("o", CultureInfo.InvariantCulture)));
             return LastInsertId();
         }
@@ -382,9 +389,11 @@ public sealed class GateCatalog : IDisposable
                     }
 
                     Execute(
-                        "UPDATE Problems SET AnswersJson = $answers, Note = $note WHERE Id = $id",
+                        "UPDATE Problems SET AnswersJson = $answers, Note = $note, Hint = $hint, Solution = $solution WHERE Id = $id",
                         ("$answers", answersJson),
                         ("$note", row.Note),
+                        ("$hint", row.Hint),
+                        ("$solution", row.Solution),
                         ("$id", id));
                     result.Updated++;
                     continue;
@@ -392,8 +401,8 @@ public sealed class GateCatalog : IDisposable
 
                 Execute(
                     """
-                    INSERT INTO Problems(DirectionKey, Direction, Grade, OlympiadKey, Olympiad, Statement, StatementKey, AnswersJson, Note, CreatedAt)
-                    VALUES($directionKey, $direction, $grade, $olympiadKey, $olympiad, $statement, $statementKey, $answers, $note, $created)
+                    INSERT INTO Problems(DirectionKey, Direction, Grade, OlympiadKey, Olympiad, Statement, StatementKey, AnswersJson, Note, Hint, Solution, CreatedAt)
+                    VALUES($directionKey, $direction, $grade, $olympiadKey, $olympiad, $statement, $statementKey, $answers, $note, $hint, $solution, $created)
                     """,
                     ("$directionKey", directionKey),
                     ("$direction", direction),
@@ -404,6 +413,8 @@ public sealed class GateCatalog : IDisposable
                     ("$statementKey", statementKey),
                     ("$answers", answersJson),
                     ("$note", row.Note),
+                    ("$hint", row.Hint),
+                    ("$solution", row.Solution),
                     ("$created", _now().ToString("o", CultureInfo.InvariantCulture)));
                 result.AddedIds.Add(LastInsertId());
                 result.Added++;
@@ -485,7 +496,7 @@ public sealed class GateCatalog : IDisposable
     {
         using var command = Command(
             """
-            SELECT Id, Statement FROM Problems
+            SELECT Id, Statement, Hint FROM Problems
             WHERE DirectionKey = $direction AND Grade = $grade
               AND ($olympiad = '' OR OlympiadKey = $olympiad)
               AND NOT EXISTS (
@@ -510,6 +521,7 @@ public sealed class GateCatalog : IDisposable
         {
             Id = id,
             Statement = reader.GetString(1),
+            Hint = reader.GetString(2),
             Direction = account.Direction,
             SolvedToday = CountToday(sid),
             DailyGoal = account.DailyGoal
@@ -634,7 +646,7 @@ public sealed class GateCatalog : IDisposable
     private List<ProblemRecord> ListProblemsCore()
     {
         var list = new List<ProblemRecord>();
-        using var command = Command("SELECT Id, Statement, AnswersJson, Direction, Grade, Olympiad, Note FROM Problems ORDER BY Id DESC");
+        using var command = Command("SELECT Id, Statement, AnswersJson, Direction, Grade, Olympiad, Note, Hint, Solution FROM Problems ORDER BY Id DESC");
         using var reader = command.ExecuteReader();
         while (reader.Read())
             list.Add(ReadProblem(reader));
@@ -643,7 +655,7 @@ public sealed class GateCatalog : IDisposable
 
     private ProblemRecord? FindProblem(long id)
     {
-        using var command = Command("SELECT Id, Statement, AnswersJson, Direction, Grade, Olympiad, Note FROM Problems WHERE Id = $id");
+        using var command = Command("SELECT Id, Statement, AnswersJson, Direction, Grade, Olympiad, Note, Hint, Solution FROM Problems WHERE Id = $id");
         Add(command, "$id", id);
         using var reader = command.ExecuteReader();
         return reader.Read() ? ReadProblem(reader) : null;
@@ -660,7 +672,9 @@ public sealed class GateCatalog : IDisposable
             Direction = reader.GetString(3),
             Grade = reader.GetInt32(4),
             Olympiad = reader.GetString(5),
-            Note = reader.GetString(6)
+            Note = reader.GetString(6),
+            Hint = reader.GetString(7),
+            Solution = reader.GetString(8)
         };
     }
 
@@ -715,7 +729,7 @@ public sealed class GateCatalog : IDisposable
             .ToList();
     }
 
-    private static void ValidateProblem(string statement, List<string> answers, string direction, int grade)
+    private static void ValidateProblem(string statement, List<string> answers, string direction, int grade, string hint)
     {
         if (statement.Length == 0)
             throw new GateException("Введите условие.");
@@ -725,6 +739,8 @@ public sealed class GateCatalog : IDisposable
             throw new GateException("Укажите направление.");
         if (grade is < 1 or > 11)
             throw new GateException("Класс должен быть от 1 до 11.");
+        if (AnswerMatch.Matches(hint, answers))
+            throw new GateException("Подсказка не должна совпадать с ответом.");
     }
 
     private static string DedupKey(string direction, int grade, string olympiad, string statement) =>
@@ -763,6 +779,8 @@ public sealed class GateCatalog : IDisposable
                 StatementKey TEXT NOT NULL,
                 AnswersJson TEXT NOT NULL,
                 Note TEXT NOT NULL,
+                Hint TEXT NOT NULL DEFAULT '',
+                Solution TEXT NOT NULL DEFAULT '',
                 CreatedAt TEXT NOT NULL
             );
 
@@ -784,6 +802,21 @@ public sealed class GateCatalog : IDisposable
                 PRIMARY KEY (AccountSid, Day)
             );
             """);
+        EnsureColumn("Problems", "Hint", "TEXT NOT NULL DEFAULT ''");
+        EnsureColumn("Problems", "Solution", "TEXT NOT NULL DEFAULT ''");
+    }
+
+    private void EnsureColumn(string table, string column, string definition)
+    {
+        using var command = Command($"PRAGMA table_info({table})");
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            if (string.Equals(reader.GetString(1), column, StringComparison.OrdinalIgnoreCase))
+                return;
+        }
+
+        Execute($"ALTER TABLE {table} ADD COLUMN {column} {definition}");
     }
 
     private int Execute(string sql, params (string Name, object? Value)[] parameters)

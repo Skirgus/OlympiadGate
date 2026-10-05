@@ -119,7 +119,7 @@
                     </Grid.ColumnDefinitions>
                     <DockPanel>
                         <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
-                            <TextBox x:Name="TextFilter" ToolTip="Поиск по условию" Margin="0,0,0,8" TextChanged="TextFilter_TextChanged"/>
+                            <TextBox x:Name="TextFilter" ToolTip="Поиск по номеру или условию" Margin="0,0,0,8" TextChanged="TextFilter_TextChanged"/>
                             <DockPanel>
                                 <ComboBox x:Name="DirectionFilter" Width="160" IsEditable="True" Margin="0,0,8,0" SelectionChanged="DirectionFilter_SelectionChanged" LostFocus="FilterChanged"/>
                                 <ComboBox x:Name="GradeFilter" Width="90" Margin="0,0,8,0" SelectionChanged="GradeFilter_SelectionChanged"/>
@@ -135,10 +135,15 @@
                         <ListBox x:Name="ProblemsList" MouseDoubleClick="ProblemsList_MouseDoubleClick">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                    <StackPanel Margin="2">
-                                        <TextBlock Text="{Binding StatementPreview}" TextWrapping="Wrap"/>
-                                        <TextBlock Text="{Binding Direction}" Foreground="#5E6A66" FontSize="12"/>
-                                    </StackPanel>
+                                    <DockPanel Margin="2">
+                                        <TextBlock DockPanel.Dock="Left" FontWeight="SemiBold" MinWidth="52" Margin="0,0,8,0" VerticalAlignment="Top">
+                                            <Run Text="№"/><Run Text="{Binding Id, Mode=OneWay}"/>
+                                        </TextBlock>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding StatementPreview}" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding Direction}" Foreground="#5E6A66" FontSize="12"/>
+                                        </StackPanel>
+                                    </DockPanel>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
@@ -146,10 +151,17 @@
                     <Border Grid.Column="2" Background="White" CornerRadius="10" Padding="18">
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <StackPanel>
+                                <TextBlock x:Name="ProblemNumberText" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,4" Visibility="Collapsed"/>
                                 <TextBlock Text="Условие" Style="{StaticResource FieldLabel}" Margin="0,0,0,4"/>
                                 <TextBox x:Name="StatementBox" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="150" VerticalScrollBarVisibility="Auto"/>
+                                <TextBlock Text="Подсказка для ученика" Style="{StaticResource FieldLabel}"/>
+                                <TextBlock Text="Ученик открывает её сам. Подсказка ведёт к способу и не содержит ответ." Foreground="#5E6A66" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,4"/>
+                                <TextBox x:Name="HintBox" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="70" VerticalScrollBarVisibility="Auto"/>
                                 <TextBlock Text="Ответы, один вариант на строку" Style="{StaticResource FieldLabel}"/>
                                 <TextBox x:Name="AnswersBox" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80" VerticalScrollBarVisibility="Auto"/>
+                                <TextBlock Text="Комментарий к решению" Style="{StaticResource FieldLabel}"/>
+                                <TextBlock Text="Только для администратора. Способ решения и как прийти к ответу. Ученик это не видит." Foreground="#5E6A66" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,4"/>
+                                <TextBox x:Name="SolutionBox" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="110" VerticalScrollBarVisibility="Auto"/>
                                 <TextBlock Text="Направление" Style="{StaticResource FieldLabel}"/>
                                 <ComboBox x:Name="ProblemDirectionBox" IsEditable="True"/>
                                 <TextBlock Text="Класс" Style="{StaticResource FieldLabel}"/>
@@ -158,7 +170,7 @@
                                 <TextBox x:Name="ProblemOlympiadBox"/>
                                 <TextBlock Text="Пометка администратора" Style="{StaticResource FieldLabel}"/>
                                 <TextBox x:Name="NoteBox"/>
-                                <TextBlock Text="Ctrl+Enter сохраняет и очищает условие." Foreground="#5E6A66" Margin="0,10,0,0"/>
+                                <TextBlock Text="Ctrl+Enter сохраняет и очищает условие, ответы, подсказку и комментарий." Foreground="#5E6A66" Margin="0,10,0,0" TextWrapping="Wrap"/>
                                 <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
                                     <Button Content="Сохранить" Style="{StaticResource PrimaryButton}" Click="SaveProblem_Click"/>
                                     <Button Content="Новая" Style="{StaticResource QuietButton}" Margin="8,0,0,0" Click="NewProblem_Click"/>

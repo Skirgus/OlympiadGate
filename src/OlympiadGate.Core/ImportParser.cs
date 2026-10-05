@@ -79,6 +79,8 @@ public static class ImportParser
         if (row.Olympiad.Length == 0)
             row.Olympiad = TextKey.Collapse(fileOlympiad);
         row.Note = FirstText(item, "note").Trim();
+        row.Hint = FirstText(item, "hint").Trim();
+        row.Solution = FirstText(item, "solution", "solutionComment").Trim();
 
         if (TryProp(item, out var gradeElement, "grade") && TryReadGrade(gradeElement, out var ownGrade))
             row.Grade = ownGrade;
@@ -105,6 +107,8 @@ public static class ImportParser
             return "Не указано направление.";
         if (gradeMissing || row.Grade is < 1 or > 11)
             return "Класс должен быть от 1 до 11.";
+        if (AnswerMatch.Matches(row.Hint, row.Answers))
+            return "Подсказка совпадает с ответом.";
         return null;
     }
 

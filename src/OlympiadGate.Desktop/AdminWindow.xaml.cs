@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -325,7 +326,13 @@ public partial class AdminWindow : Window
             query = query.Where(problem => problem.Olympiad.Contains(olympiad, StringComparison.CurrentCultureIgnoreCase));
         var text = TextFilter.Text.Trim();
         if (text.Length > 0)
-            query = query.Where(problem => problem.Statement.Contains(text, StringComparison.CurrentCultureIgnoreCase));
+        {
+            var numberText = text.TrimStart('№', '#').Trim();
+            var byNumber = long.TryParse(numberText, NumberStyles.Integer, CultureInfo.InvariantCulture, out var number);
+            query = query.Where(problem =>
+                problem.Statement.Contains(text, StringComparison.CurrentCultureIgnoreCase) ||
+                (byNumber && problem.Id == number));
+        }
         ProblemsList.ItemsSource = query.ToList();
     }
 
@@ -334,8 +341,12 @@ public partial class AdminWindow : Window
         if (ProblemsList.SelectedItem is not ProblemRecord problem)
             return;
         _problemId = problem.Id;
+        ProblemNumberText.Text = $"Задача № {problem.Id}";
+        ProblemNumberText.Visibility = Visibility.Visible;
         StatementBox.Text = problem.Statement;
+        HintBox.Text = problem.Hint;
         AnswersBox.Text = problem.AnswersText;
+        SolutionBox.Text = problem.Solution;
         ProblemDirectionBox.Text = problem.Direction;
         ProblemGradeBox.SelectedItem = problem.Grade;
         ProblemOlympiadBox.Text = problem.Olympiad;
@@ -356,14 +367,19 @@ public partial class AdminWindow : Window
                 Direction = ProblemDirectionBox.Text,
                 Grade = ProblemGradeBox.SelectedItem is int grade ? grade : 5,
                 Olympiad = ProblemOlympiadBox.Text,
-                Note = NoteBox.Text
+                Note = NoteBox.Text,
+                Hint = HintBox.Text,
+                Solution = SolutionBox.Text
             });
             var direction = ProblemDirectionBox.Text;
             var problemGrade = ProblemGradeBox.SelectedItem;
             var olympiad = ProblemOlympiadBox.Text;
             _problemId = 0;
+            ProblemNumberText.Visibility = Visibility.Collapsed;
             StatementBox.Clear();
+            HintBox.Clear();
             AnswersBox.Clear();
+            SolutionBox.Clear();
             NoteBox.Clear();
             ProblemDirectionBox.Text = direction;
             ProblemGradeBox.SelectedItem = problemGrade;
@@ -383,8 +399,11 @@ public partial class AdminWindow : Window
     private void NewProblem_Click(object sender, RoutedEventArgs e)
     {
         _problemId = 0;
+        ProblemNumberText.Visibility = Visibility.Collapsed;
         StatementBox.Clear();
+        HintBox.Clear();
         AnswersBox.Clear();
+        SolutionBox.Clear();
         NoteBox.Clear();
         StatementBox.Focus();
     }

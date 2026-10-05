@@ -24,6 +24,8 @@ public sealed class ProblemRecord
     public int Grade { get; set; }
     public string Olympiad { get; set; } = "";
     public string Note { get; set; } = "";
+    public string Hint { get; set; } = "";
+    public string Solution { get; set; } = "";
 
     public string AnswersText => string.Join(Environment.NewLine, Answers);
 
@@ -41,6 +43,7 @@ public sealed class TaskView
 {
     public long Id { get; set; }
     public string Statement { get; set; } = "";
+    public string Hint { get; set; } = "";
     public string Direction { get; set; } = "";
     public int SolvedToday { get; set; }
     public int DailyGoal { get; set; }
@@ -91,8 +94,14 @@ public sealed class ImportRow
     public int Grade { get; set; }
     public string Olympiad { get; set; } = "";
     public string Note { get; set; } = "";
+    public string Hint { get; set; } = "";
+    public string Solution { get; set; } = "";
     public string Status { get; set; } = "ready";
     public string Message { get; set; } = "";
+
+    public string HintMark => string.IsNullOrWhiteSpace(Hint) ? "" : "есть";
+
+    public string SolutionMark => string.IsNullOrWhiteSpace(Solution) ? "" : "есть";
 
     public string AnswersText => string.Join("; ", Answers);
 
@@ -154,6 +163,8 @@ public sealed class SaveProblemRequest
     public int Grade { get; set; }
     public string Olympiad { get; set; } = "";
     public string Note { get; set; } = "";
+    public string Hint { get; set; } = "";
+    public string Solution { get; set; } = "";
 }
 
 public sealed class SubmitRequest

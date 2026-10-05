@@ -72,6 +72,13 @@ public partial class LockWindow : Window
         base.OnClosed(e);
     }
 
+    private void HintButton_Click(object sender, RoutedEventArgs e)
+    {
+        var open = HintPanel.Visibility != Visibility.Visible;
+        HintPanel.Visibility = open ? Visibility.Visible : Visibility.Collapsed;
+        HintButton.Content = open ? "Скрыть подсказку" : "Подсказка";
+    }
+
     private async void SubmitButton_Click(object sender, RoutedEventArgs e) => await SubmitAsync();
 
     private async void AnswerBox_KeyDown(object sender, KeyEventArgs e)
@@ -177,7 +184,13 @@ public partial class LockWindow : Window
 
         EmptyText.Visibility = Visibility.Collapsed;
         TaskPanel.Visibility = Visibility.Visible;
+        NumberText.Text = $"Задача № {task.Id}";
         StatementText.Text = task.Statement;
+        var hasHint = !string.IsNullOrWhiteSpace(task.Hint);
+        HintButton.Visibility = hasHint ? Visibility.Visible : Visibility.Collapsed;
+        HintButton.Content = "Подсказка";
+        HintBody.Text = task.Hint;
+        HintPanel.Visibility = Visibility.Collapsed;
         AnswerBox.Text = "";
         ErrorText.Text = "";
         AnswerBox.Focus();

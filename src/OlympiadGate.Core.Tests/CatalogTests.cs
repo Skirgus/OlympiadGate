@@ -1,3 +1,5 @@
+using System.Text.Json;
+using Microsoft.Data.Sqlite;
 using Xunit;
 
 namespace OlympiadGate.Core.Tests;
@@ -160,6 +162,135 @@ public sealed class CatalogTests : IDisposable
         Assert.Equal(1, updated.Errors);
         var old = catalog.ListProblems().Single(problem => problem.Statement == "Уже была");
         Assert.Equal(["9"], old.Answers);
+    }
+
+    [Fact]
+    public void Student_task_includes_the_hint_and_hides_the_solution()
+    {
+        using var catalog = Open();
+        catalog.SaveAccount(Account("S-1", "Ученик", "Математика", goal: 1));
+        var id = catalog.SaveProblem(new SaveProblemRequest
+        {
+            Statement = "2+2",
+            Answers = ["4"],
+            Direction = "Математика",
+            Grade = 5,
+            Hint = "Сложи два одинаковых числа.",
+            Solution = "Сложить 2 и 2."
+        });
+
+        var task = catalog.NextProblem("S-1");
+        Assert.Equal(id, task!.Id);
+        Assert.Equal("Сложи два одинаковых числа.", task.Hint);
+        var json = JsonSerializer.Serialize(task, GateJson.Options);
+        Assert.DoesNotContain("Сложить 2 и 2", json);
+        Assert.DoesNotContain("solution", json, StringComparison.OrdinalIgnoreCase);
+
+        var stored = catalog.ListProblems().Single(problem => problem.Id == id);
+        Assert.Equal("Сложить 2 и 2.", stored.Solution);
+
+        var leaked = Problem("3+3", ["6"], "Математика");
+        leaked.Hint = "6";
+        var error = Assert.Throws<GateException>(() => catalog.SaveProblem(leaked));
+        Assert.Contains("Подсказка", error.Message);
+    }
+
+    [Fact]
+    public void Import_stores_hint_and_solution_and_rejects_a_hint_that_is_the_answer()
+    {
+        using var catalog = Open();
+        catalog.SaveProblem(Problem("Уже была", ["1"], "Математика"));
+        const string json = """
+            {
+              "direction": "Математика",
+              "grade": 5,
+              "problems": [
+                {
+                  "statement": "Сколько будет 2+2?",
+                  "answers": ["4"],
+                  "hint": "Сложи одинаковые слагаемые.",
+                  "solution": "Сложить 2 и 2. Получится 4."
+                },
+                {
+                  "statement": "Сколько будет 3+3?",
+                  "answers": ["6"],
+                  "hint": "6"
+                },
+                {
+                  "text": "Уже была",
+                  "answer": "9",
+                  "hint": "Вспомни прошлый ответ.",
+                  "solutionComment": "Оставить число 9."
+                }
+              ]
+            }
+            """;
+
+        var preview = catalog.PreviewImport(json, new ImportDefaults());
+        Assert.Equal(1, preview.Ready);
+        Assert.Equal(1, preview.Duplicates);
+        Assert.Equal(1, preview.Errors);
+        Assert.Equal("есть", preview.Rows[0].HintMark);
+        Assert.Equal("есть", preview.Rows[0].SolutionMark);
+        Assert.Contains("Подсказка", preview.Rows[1].Message);
+
+        var updated = catalog.CommitImport(json, new ImportDefaults(), updateDuplicates: true);
+        Assert.Equal(1, updated.Added);
+        Assert.Equal(1, updated.Updated);
+        var created = catalog.ListProblems().Single(problem => problem.Statement == "Сколько будет 2+2?");
+        Assert.Equal("Сложи одинаковые слагаемые.", created.Hint);
+        Assert.Equal("Сложить 2 и 2. Получится 4.", created.Solution);
+        var old = catalog.ListProblems().Single(problem => problem.Statement == "Уже была");
+        Assert.Equal(["9"], old.Answers);
+        Assert.Equal("Вспомни прошлый ответ.", old.Hint);
+        Assert.Equal("Оставить число 9.", old.Solution);
+    }
+
+    [Fact]
+    public void Older_bank_gains_hint_and_solution_columns()
+    {
+        using (var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = _database }.ToString()))
+        {
+            connection.Open();
+            using var command = connection.CreateCommand();
+            command.CommandText = """
+                CREATE TABLE Problems (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    DirectionKey TEXT NOT NULL,
+                    Direction TEXT NOT NULL,
+                    Grade INTEGER NOT NULL,
+                    OlympiadKey TEXT NOT NULL,
+                    Olympiad TEXT NOT NULL,
+                    Statement TEXT NOT NULL,
+                    StatementKey TEXT NOT NULL,
+                    AnswersJson TEXT NOT NULL,
+                    Note TEXT NOT NULL,
+                    CreatedAt TEXT NOT NULL
+                );
+                INSERT INTO Problems(DirectionKey, Direction, Grade, OlympiadKey, Olympiad, Statement, StatementKey, AnswersJson, Note, CreatedAt)
+                VALUES('математика', 'Математика', 5, '', '', 'Старая', 'старая', '["1"]', '', '2026-10-05T08:00:00');
+                """;
+            command.ExecuteNonQuery();
+        }
+
+        using var catalog = Open();
+        var problem = catalog.ListProblems().Single();
+        Assert.Equal("Старая", problem.Statement);
+        Assert.Equal("", problem.Hint);
+        Assert.Equal("", problem.Solution);
+        catalog.SaveProblem(new SaveProblemRequest
+        {
+            Id = problem.Id,
+            Statement = problem.Statement,
+            Answers = problem.Answers,
+            Direction = problem.Direction,
+            Grade = problem.Grade,
+            Hint = "Посмотри на условие ещё раз.",
+            Solution = "Ответ уже был единицей."
+        });
+        var saved = catalog.ListProblems().Single();
+        Assert.Equal("Посмотри на условие ещё раз.", saved.Hint);
+        Assert.Equal("Ответ уже был единицей.", saved.Solution);
     }
 
     [Fact]

@@ -22,7 +22,23 @@
                            TextWrapping="Wrap"
                            Visibility="Collapsed"/>
                 <StackPanel x:Name="TaskPanel">
+                    <TextBlock x:Name="NumberText" FontSize="16" Foreground="#8FA39A" Margin="0,0,0,12"/>
                     <TextBlock x:Name="StatementText" FontSize="26" TextWrapping="Wrap" LineHeight="36"/>
+                    <Button x:Name="HintButton"
+                            Content="Подсказка"
+                            Margin="0,18,0,0"
+                            HorizontalAlignment="Left"
+                            Padding="18,8"
+                            FontSize="15"
+                            Background="#1C3330"
+                            Foreground="#F4F7F5"
+                            BorderBrush="#8FA39A"
+                            BorderThickness="1"
+                            Cursor="Hand"
+                            Click="HintButton_Click"/>
+                    <Border x:Name="HintPanel" Background="#1C3330" CornerRadius="8" Padding="14" Margin="0,12,0,0" Visibility="Collapsed">
+                        <TextBlock x:Name="HintBody" TextWrapping="Wrap" FontSize="20" LineHeight="28"/>
+                    </Border>
                     <TextBlock Text="Ответ" Margin="0,28,0,8" Foreground="#8FA39A"/>
                     <TextBox x:Name="AnswerBox" FontSize="22" Padding="12,10" KeyDown="AnswerBox_KeyDown"/>
                     <TextBlock x:Name="HintText" Text="Введите ответ и нажмите «Проверить»." Margin="0,8,0,0" Foreground="#8FA39A"/>

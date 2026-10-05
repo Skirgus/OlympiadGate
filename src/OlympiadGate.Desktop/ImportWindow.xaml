@@ -19,7 +19,7 @@
             </StackPanel>
         </StackPanel>
         <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
-            <CheckBox x:Name="UpdateBox" Content="Обновить ответы у уже существующих"/>
+            <CheckBox x:Name="UpdateBox" Content="Обновить ответы, подсказку и комментарий у уже существующих"/>
             <DockPanel Margin="0,10,0,0">
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                     <Button Content="Разобрать" Style="{StaticResource QuietButton}" Click="Preview_Click"/>
@@ -43,7 +43,9 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="№" Binding="{Binding Index}" Width="40"/>
                         <DataGridTextColumn Header="Условие" Binding="{Binding StatementPreview}" Width="*"/>
-                        <DataGridTextColumn Header="Ответы" Binding="{Binding AnswersText}" Width="160"/>
+                        <DataGridTextColumn Header="Ответы" Binding="{Binding AnswersText}" Width="140"/>
+                        <DataGridTextColumn Header="Подсказка" Binding="{Binding HintMark}" Width="90"/>
+                        <DataGridTextColumn Header="Комментарий" Binding="{Binding SolutionMark}" Width="110"/>
                         <DataGridTextColumn Header="Направление" Binding="{Binding Direction}" Width="130"/>
                         <DataGridTextColumn Header="Класс" Binding="{Binding Grade}" Width="60"/>
                         <DataGridTextColumn Header="Статус" Binding="{Binding StatusText}" Width="90"/>
