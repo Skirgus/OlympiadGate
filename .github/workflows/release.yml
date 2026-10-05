@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: write
+
+jobs:
+  installer:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Check tag matches version.txt
+        shell: pwsh
+        run: |
+          $version = (Get-Content -Raw version.txt).Trim()
+          $tag = "${{ github.ref_name }}"
+          if ($tag -ne "v$version") {
+            throw "Tag $tag does not match version.txt ($version). Expected v$version."
+          }
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          $dest = Join-Path $env:RUNNER_TEMP "innosetup.exe"
+          Invoke-WebRequest -Uri "https://github.com/jrsoftware/issrc/releases/download/is-6_7_3/innosetup-6.7.3.exe" -OutFile $dest
+          $dir = Join-Path $env:LOCALAPPDATA "Programs\Inno Setup 6"
+          Start-Process -FilePath $dest -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- /DIR=`"$dir`"" -Wait
+          if (-not (Test-Path (Join-Path $dir "ISCC.exe"))) { throw "ISCC was not installed" }
+
+      - name: Build installer
+        shell: pwsh
+        run: ./installer/publish.ps1
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $version = (Get-Content -Raw version.txt).Trim()
+          $setup = Get-ChildItem installer -Filter "OlympiadGate-*-Setup.exe" | Select-Object -First 1
+          if (-not $setup) { throw "Installer was not built" }
+          gh release create "v$version" $setup.FullName --title "OlympiadGate $version" --notes "Установщик OlympiadGate $version для 64-разрядной Windows. Запускать от имени администратора."

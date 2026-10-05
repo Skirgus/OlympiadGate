@@ -2,7 +2,7 @@ bin/
 obj/
 .vs/
 publish/
-installer/OlympiadGate-Setup.exe
+installer/*.exe
 *.user
 TestResults/
 *.log

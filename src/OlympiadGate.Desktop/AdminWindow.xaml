@@ -19,7 +19,8 @@
             <DockPanel Margin="20,24">
                 <StackPanel DockPanel.Dock="Top">
                     <TextBlock Text="OlympiadGate" Foreground="White" FontSize="22" FontWeight="SemiBold"/>
-                    <TextBlock Text="Задачи до входа" Foreground="#B7C9C2" Margin="0,4,0,28"/>
+                    <TextBlock Text="Задачи до входа" Foreground="#B7C9C2" Margin="0,4,0,0"/>
+                    <TextBlock x:Name="VersionText" Foreground="#B7C9C2" Margin="0,8,0,28" FontSize="12"/>
                 </StackPanel>
                 <StackPanel>
                     <Button x:Name="AccountsButton" Content="Учётки" Click="ShowAccounts_Click" Style="{StaticResource QuietButton}" Margin="0,0,0,8" HorizontalContentAlignment="Left"/>

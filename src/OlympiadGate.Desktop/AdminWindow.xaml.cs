@@ -23,6 +23,9 @@ public partial class AdminWindow : Window
     public AdminWindow()
     {
         InitializeComponent();
+        var version = ProductInfo.Version;
+        Title = "OlympiadGate " + version;
+        VersionText.Text = "Версия " + version;
         for (var grade = 1; grade <= 11; grade++)
         {
             GradeBox.Items.Add(grade);

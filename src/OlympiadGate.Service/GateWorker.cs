@@ -26,7 +26,7 @@ public sealed class GateWorker : BackgroundService
             _log.Error("Не удалось ограничить доступ к каталогу данных", ex);
         }
 
-        _log.Info("Служба OlympiadGate запущена.");
+        _log.Info("Служба OlympiadGate " + ProductInfo.Version + " запущена.");
         var pipeTask = new PipeServer(_endpoints, _log).RunAsync(stoppingToken);
         try
         {

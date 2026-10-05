@@ -1,15 +1,18 @@
 #define PublishDir "..\publish"
+#ifndef AppVersion
+  #error Pass the version by running installer/publish.ps1
+#endif
 
 [Setup]
 AppId={{8F3A1C2E-6B47-4D1A-9E55-7C0A2B6D4F18}
 AppName=OlympiadGate
-AppVersion=1.0.0
+AppVersion={#AppVersion}
 AppPublisher=OlympiadGate
 DefaultDirName={autopf}\OlympiadGate
 DefaultGroupName=OlympiadGate
 DisableProgramGroupPage=yes
 OutputDir=.
-OutputBaseFilename=OlympiadGate-Setup
+OutputBaseFilename=OlympiadGate-{#AppVersion}-Setup
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern

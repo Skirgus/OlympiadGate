@@ -1,5 +1,9 @@
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
+$version = (Get-Content -Raw (Join-Path $root "version.txt")).Trim()
+if ($version -notmatch '^\d+\.\d+\.\d+$') {
+    throw "version.txt must look like 1.2.3"
+}
 $out = Join-Path $root "publish"
 if (Test-Path $out) {
     Remove-Item $out -Recurse -Force
@@ -17,7 +21,7 @@ $candidates = @(
 )
 $iscc = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
 if ($iscc) {
-    & $iscc (Join-Path $PSScriptRoot "OlympiadGate.iss")
+    & $iscc "/DAppVersion=$version" (Join-Path $PSScriptRoot "OlympiadGate.iss")
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 } else {
     Write-Host "Inno Setup is not installed. Published files are in publish. Build the setup later with: ISCC installer\OlympiadGate.iss"
