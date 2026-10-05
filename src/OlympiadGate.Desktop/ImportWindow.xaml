@@ -1,0 +1,56 @@
+<Window x:Class="OlympiadGate.Desktop.ImportWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Импорт JSON"
+        Width="900"
+        Height="640"
+        MinWidth="760"
+        MinHeight="520"
+        WindowStartupLocation="CenterOwner"
+        Background="#F3F0E8"
+        FontFamily="Segoe UI">
+    <DockPanel Margin="16">
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+            <TextBlock Text="Значения по умолчанию подставятся в строки, где их нет." Foreground="#5E6A66"/>
+            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                <TextBox x:Name="DirectionBox" Width="220" Margin="0,0,8,0" ToolTip="Направление"/>
+                <TextBox x:Name="GradeBox" Width="70" Margin="0,0,8,0" ToolTip="Класс"/>
+                <TextBox x:Name="OlympiadBox" Width="220" ToolTip="Олимпиада"/>
+            </StackPanel>
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+            <CheckBox x:Name="UpdateBox" Content="Обновить ответы у уже существующих"/>
+            <DockPanel Margin="0,10,0,0">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button Content="Разобрать" Style="{StaticResource QuietButton}" Click="Preview_Click"/>
+                    <Button x:Name="AddButton" Content="Добавить в банк" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0" IsEnabled="False" Click="Add_Click"/>
+                </StackPanel>
+                <TextBlock x:Name="SummaryText" VerticalAlignment="Center" TextWrapping="Wrap"/>
+            </DockPanel>
+        </StackPanel>
+        <TabControl x:Name="Tabs">
+            <TabItem Header="Файл">
+                <DockPanel Margin="8">
+                    <Button DockPanel.Dock="Top" Content="Выбрать файл" HorizontalAlignment="Left" Style="{StaticResource QuietButton}" Click="Browse_Click" Margin="0,0,0,8"/>
+                    <TextBlock x:Name="FileText" TextWrapping="Wrap" Foreground="#5E6A66"/>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="Вставить текст">
+                <TextBox x:Name="PasteBox" AcceptsReturn="True" AcceptsTab="True" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" Margin="8"/>
+            </TabItem>
+            <TabItem Header="Предпросмотр">
+                <DataGrid x:Name="Grid" Margin="8" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" LoadingRow="Grid_LoadingRow">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="№" Binding="{Binding Index}" Width="40"/>
+                        <DataGridTextColumn Header="Условие" Binding="{Binding StatementPreview}" Width="*"/>
+                        <DataGridTextColumn Header="Ответы" Binding="{Binding AnswersText}" Width="160"/>
+                        <DataGridTextColumn Header="Направление" Binding="{Binding Direction}" Width="130"/>
+                        <DataGridTextColumn Header="Класс" Binding="{Binding Grade}" Width="60"/>
+                        <DataGridTextColumn Header="Статус" Binding="{Binding StatusText}" Width="90"/>
+                        <DataGridTextColumn Header="Замечание" Binding="{Binding Message}" Width="180"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>

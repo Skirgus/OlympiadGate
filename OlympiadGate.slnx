@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/OlympiadGate.Core.Tests/OlympiadGate.Core.Tests.csproj" />
+    <Project Path="src/OlympiadGate.Core/OlympiadGate.Core.csproj" />
+    <Project Path="src/OlympiadGate.Desktop/OlympiadGate.Desktop.csproj" />
+    <Project Path="src/OlympiadGate.Service/OlympiadGate.Service.csproj" />
+  </Folder>
+</Solution>

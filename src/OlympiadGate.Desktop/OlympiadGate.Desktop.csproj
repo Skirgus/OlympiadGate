@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>OlympiadGate.Desktop</RootNamespace>
+    <AssemblyName>OlympiadGate.Desktop</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationTitle>OlympiadGate</ApplicationTitle>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OlympiadGate.Core\OlympiadGate.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Help\guide.md" />
+  </ItemGroup>
+</Project>

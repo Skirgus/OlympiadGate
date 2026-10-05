@@ -1,0 +1,8 @@
+bin/
+obj/
+.vs/
+publish/
+installer/OlympiadGate-Setup.exe
+*.user
+TestResults/
+*.log
